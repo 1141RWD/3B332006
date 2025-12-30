@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Interactive Marquee Logic ---
     const marqueeTrack = document.getElementById('marquee-track');
+    const marqueeWrapper = document.querySelector('.marquee-wrapper');
     const marqueeLeftBtn = document.getElementById('marquee-left');
     const marqueeRightBtn = document.getElementById('marquee-right');
     const originalItems = Array.from(marqueeTrack.children);
@@ -70,12 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start Animation
     animationId = requestAnimationFrame(animateMarquee);
 
-    // Pause on Hover (Track itself or items)
-    marqueeTrack.addEventListener('mouseenter', () => {
+    // Pause on Hover (Wrapper covers both track and buttons)
+    marqueeWrapper.addEventListener('mouseenter', () => {
         isPaused = true;
     });
 
-    marqueeTrack.addEventListener('mouseleave', () => {
+    marqueeWrapper.addEventListener('mouseleave', () => {
         isPaused = false;
         // Sync scrollPos with current scrollLeft in case manual scroll happened
         scrollPos = marqueeTrack.scrollLeft;
@@ -85,15 +86,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const manualScrollAmount = 300;
 
     marqueeLeftBtn.addEventListener('click', () => {
-        scrollPos -= manualScrollAmount;
-        if (scrollPos < 0) scrollPos = marqueeTrack.scrollWidth / 2 - manualScrollAmount;
-        marqueeTrack.scrollLeft = scrollPos;
+        // Ensure we have a valid baseline
+        let currentLeft = marqueeTrack.scrollLeft;
+        const limit = marqueeTrack.scrollWidth / 2;
+
+        // Wrapped Loop Logic: If moving left goes < 0, jump forward to the cloned set first
+        if (currentLeft - manualScrollAmount < 0) {
+            currentLeft += limit;
+            marqueeTrack.scrollLeft = currentLeft;
+        }
+
+        const target = currentLeft - manualScrollAmount;
+
+        marqueeTrack.scrollTo({
+            left: target,
+            behavior: 'smooth'
+        });
+
+        // Update global scrollPos to match
+        scrollPos = target;
     });
 
     marqueeRightBtn.addEventListener('click', () => {
-        scrollPos += manualScrollAmount;
-        if (scrollPos >= marqueeTrack.scrollWidth / 2) scrollPos = 0;
-        marqueeTrack.scrollLeft = scrollPos;
+        const limit = marqueeTrack.scrollWidth / 2;
+        let target = marqueeTrack.scrollLeft + manualScrollAmount;
+
+        marqueeTrack.scrollTo({
+            left: target,
+            behavior: 'smooth'
+        });
+
+        scrollPos = target;
+
+        // Check for reset need after animation (approx 500ms)
+        setTimeout(() => {
+            if (marqueeTrack.scrollLeft >= limit) {
+                marqueeTrack.scrollLeft -= limit;
+                scrollPos = marqueeTrack.scrollLeft;
+            }
+        }, 600);
     });
 
     // --- Modal / Lightbox Logic ---
