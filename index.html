@@ -21,7 +21,7 @@
             <li><a href="#" class="nav-btn active" data-target="home">首頁</a></li>
             <li><a href="#" class="nav-btn" data-target="market">農產市集</a></li>
             <li><a href="#" class="nav-btn" data-target="farm-game">開心農場</a></li>
-            <li><a href="#" class="nav-btn" data-target="admin">後台管理</a></li>
+            <li><a href="#" class="nav-btn" data-target="admin">商品管理</a></li>
         </ul>
         <div class="cart-icon" id="cart-btn">
             🛒 <span id="cart-count">0</span>
@@ -191,7 +191,7 @@
         <!-- SECTION: ADMIN -->
         <section id="admin" class="page-section">
             <div class="admin-container">
-                <h2>後台管理系統</h2>
+                <h2>商品管理系統</h2>
 
                 <div class="admin-panel">
                     <!-- Add Product Form -->
@@ -203,8 +203,8 @@
                                 <input type="text" id="new-prod-name" placeholder="例如: 有機草莓" required>
                             </div>
                             <div class="form-group">
-                                <label for="new-prod-img">圖片 URL (或檔案名)</label>
-                                <input type="text" id="new-prod-img" placeholder="例如: images/apple.png" required>
+                                <label for="new-prod-img">商品圖片 (上傳檔案)</label>
+                                <input type="file" id="new-prod-img" accept="image/*" required>
                             </div>
                             <div class="form-group">
                                 <label for="new-prod-price">價格 (NT$)</label>

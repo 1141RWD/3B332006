@@ -468,24 +468,32 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const name = document.getElementById('new-prod-name').value;
-        const img = document.getElementById('new-prod-img').value;
+        const imgInput = document.getElementById('new-prod-img');
         const price = document.getElementById('new-prod-price').value;
         const cat = document.getElementById('new-prod-cat').value;
 
         // Basic validation
-        if (!name || !img || !price) {
-            alert('請填寫完整資訊');
+        if (!name || imgInput.files.length === 0 || !price) {
+            alert('請填寫完整資訊並上傳圖片');
             return;
         }
 
-        addProductToDOM(name, img, price, cat);
+        const file = imgInput.files[0];
+        const reader = new FileReader();
 
-        // Reset form
-        addProductForm.reset();
-        alert('上架成功！');
+        reader.onload = function (e) {
+            const imgUrl = e.target.result; // Base64 string
+            addProductToDOM(name, imgUrl, price, cat);
 
-        // If we serve the list immediately
-        renderAdminProductList();
+            // Reset form
+            addProductForm.reset();
+            alert('上架成功！');
+
+            // If we serve the list immediately
+            renderAdminProductList();
+        }
+
+        reader.readAsDataURL(file);
     });
 
     function addProductToDOM(name, imgUrl, price, category) {
