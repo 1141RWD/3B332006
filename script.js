@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Market Item Filtering ---
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const productCards = document.querySelectorAll('.product-card');
+    const productGrid = document.querySelector('.product-grid'); // Parent container
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -170,8 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
 
             const filterValue = btn.getAttribute('data-filter');
+            // Query fresh list of cards
+            const currentCards = document.querySelectorAll('.product-card');
 
-            productCards.forEach(card => {
+            currentCards.forEach(card => {
                 if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
                     card.style.display = 'flex'; // Restore display
                 } else {
@@ -190,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotalElement = document.getElementById('cart-total-price');
     const cartCountElement = document.getElementById('cart-count');
     const checkoutBtn = document.getElementById('checkout-btn');
-    const addToCartBtns = document.querySelectorAll('.add-cart-btn');
+    // const addToCartBtns = document.querySelectorAll('.add-cart-btn'); // REMOVED: Using delegation
 
     // Open Cart Modal
     cartBtn.addEventListener('click', () => {
@@ -224,13 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentProduct = {}; // Store currently selected product data
 
-    // Open Purchase Modal
-    addToCartBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    // Open Purchase Modal (Event Delegation for Dynamic Items)
+    productGrid.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-cart-btn')) {
             const card = e.target.closest('.product-card');
             const imgSrc = card.querySelector('img').src;
             const name = card.querySelector('h3').innerText;
             const priceText = card.querySelector('.price').innerText;
+            // Extract number from price string
             const price = parseInt(priceText.replace(/[^\d]/g, ''));
 
             // Populate Modal
@@ -242,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             currentProduct = { name, price, imgSrc };
             purchaseModal.style.display = "block";
-        });
+        }
     });
 
     closePurchaseBtn.addEventListener('click', () => {
@@ -404,5 +407,106 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- Admin Panel Logic ---
+    const addProductForm = document.getElementById('add-product-form');
+    const adminProductList = document.getElementById('admin-product-list');
+    const adminNavBtn = document.querySelector('[data-target="admin"]');
+
+    // Render Admin List when navigating to Admin
+    adminNavBtn.addEventListener('click', () => {
+        renderAdminProductList();
+    });
+
+    function renderAdminProductList() {
+        const cards = document.querySelectorAll('.product-card');
+        adminProductList.innerHTML = '';
+
+        if (cards.length === 0) {
+            adminProductList.innerHTML = '<p class="empty-msg">目前沒有商品</p>';
+            return;
+        }
+
+        cards.forEach((card, index) => {
+            const name = card.querySelector('h3').innerText;
+            const imgSrc = card.querySelector('img').src;
+            const item = document.createElement('div');
+            item.classList.add('admin-list-item');
+
+            item.innerHTML = `
+                <div class="admin-item-info">
+                    <img src="${imgSrc}" alt="${name}">
+                    <span>${name}</span>
+                </div>
+                <button class="admin-remove-btn" data-index="${index}">下架</button>
+            `;
+            adminProductList.appendChild(item);
+        });
+
+        // Attach event listeners to new remove buttons
+        document.querySelectorAll('.admin-remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                removeProduct(idx);
+            });
+        });
+    }
+
+    function removeProduct(index) {
+        const cards = document.querySelectorAll('.product-card');
+        if (cards[index]) {
+            if (confirm('確定要下架此商品嗎？')) {
+                cards[index].remove();
+                renderAdminProductList(); // Re-render logic
+                alert('商品已下架');
+            }
+        }
+    }
+
+    // Add Product
+    addProductForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('new-prod-name').value;
+        const img = document.getElementById('new-prod-img').value;
+        const price = document.getElementById('new-prod-price').value;
+        const cat = document.getElementById('new-prod-cat').value;
+
+        // Basic validation
+        if (!name || !img || !price) {
+            alert('請填寫完整資訊');
+            return;
+        }
+
+        addProductToDOM(name, img, price, cat);
+
+        // Reset form
+        addProductForm.reset();
+        alert('上架成功！');
+
+        // If we serve the list immediately
+        renderAdminProductList();
+    });
+
+    function addProductToDOM(name, imgUrl, price, category) {
+        const newCard = document.createElement('div');
+        newCard.classList.add('product-card');
+        newCard.setAttribute('data-category', category); // Helper for filter
+
+        const html = `
+            <div class="card-img">
+                <img src="${imgUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
+                <span class="tag" style="background:var(--secondary-color)">新品</span>
+            </div>
+            <div class="card-info">
+                <h3>${name}</h3>
+                <p class="price">NT$ ${price}</p>
+                <button class="add-cart-btn">加入購物車</button>
+            </div>
+        `;
+
+        newCard.innerHTML = html;
+        productGrid.appendChild(newCard);
+    }
 
 });

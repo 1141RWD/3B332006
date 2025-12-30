@@ -21,6 +21,7 @@
             <li><a href="#" class="nav-btn active" data-target="home">首頁</a></li>
             <li><a href="#" class="nav-btn" data-target="market">農產市集</a></li>
             <li><a href="#" class="nav-btn" data-target="farm-game">開心農場</a></li>
+            <li><a href="#" class="nav-btn" data-target="admin">後台管理</a></li>
         </ul>
         <div class="cart-icon" id="cart-btn">
             🛒 <span id="cart-count">0</span>
@@ -184,6 +185,52 @@
                     <button>收成 🧺</button>
                 </div>
                 <p class="game-note">目前為預覽版，敬請期待完整功能！</p>
+            </div>
+        </section>
+
+        <!-- SECTION: ADMIN -->
+        <section id="admin" class="page-section">
+            <div class="admin-container">
+                <h2>後台管理系統</h2>
+
+                <div class="admin-panel">
+                    <!-- Add Product Form -->
+                    <div class="admin-card">
+                        <h3>上架新商品</h3>
+                        <form id="add-product-form">
+                            <div class="form-group">
+                                <label for="new-prod-name">商品名稱</label>
+                                <input type="text" id="new-prod-name" placeholder="例如: 有機草莓" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-prod-img">圖片 URL (或檔案名)</label>
+                                <input type="text" id="new-prod-img" placeholder="例如: images/apple.png" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-prod-price">價格 (NT$)</label>
+                                <input type="number" id="new-prod-price" placeholder="例如: 300" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-prod-cat">分類</label>
+                                <select id="new-prod-cat">
+                                    <option value="fruit">水果</option>
+                                    <option value="vegetable">蔬菜</option>
+                                    <option value="package">組合包</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="cta-btn">確認上架</button>
+                        </form>
+                    </div>
+
+                    <!-- Remove Product List -->
+                    <div class="admin-card">
+                        <h3>目前架上商品 (點擊下架)</h3>
+                        <div id="admin-product-list" class="admin-list">
+                            <!-- Populated by JS -->
+                            <p class="empty-msg">載入中...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
