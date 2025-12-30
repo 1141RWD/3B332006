@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四季農場 - 當季新鮮直送</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts for premium feel -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">四季農場</div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-btn active" data-target="home">首頁</a></li>
+            <li><a href="#" class="nav-btn" data-target="market">農產市集</a></li>
+            <li><a href="#" class="nav-btn" data-target="farm-game">開心農場</a></li>
+        </ul>
+        <div class="cart-icon" id="cart-btn">
+            🛒 <span id="cart-count">0</span>
+        </div>
+    </nav>
+
+    <!-- Main Content Container (SPA Shells) -->
+    <main class="content-container">
+
+        <!-- SECTION: HOME -->
+        <section id="home" class="page-section active">
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="hero-content">
+                    <h1>從產地到餐桌的鮮甜</h1>
+                    <p>堅持使用自然農法，品嘗最真實的大地風味</p>
+                    <button class="cta-btn" onclick="navigateTo('market')">立即選購</button>
+                </div>
+            </div>
+
+            <!-- Marquee Section -->
+            <div class="marquee-container">
+                <h2>當季盛產</h2>
+                <div class="season-info">
+                    <p>冬季台灣盛產的水果主要有柑橘類 (柳丁、橘子、椪柑)、草莓、蓮霧、釋迦
+                        (鳳梨釋迦)、棗子、番茄、番石榴，以及冬季也持續供應的蘋果、梨子、木瓜、香蕉等。這些水果富含維生素C，酸甜可口，是冬天補充營養的好選擇。</p>
+                </div>
+                <div class="marquee-wrapper">
+                    <button class="marquee-btn left" id="marquee-left">&lt;</button>
+                    <div class="marquee-track" id="marquee-track">
+                        <!-- User Provided Items -->
+                        <div class="marquee-item"><img src="images/apple.png" alt="嚴選蘋果"><span>嚴選蘋果</span></div>
+                        <div class="marquee-item"><img src="images/cabbage.png" alt="有機高麗菜"><span>有機高麗菜</span></div>
+                        <div class="marquee-item"><img src="images/taiwan_gift_box.png" alt="綜合禮盒"><span>綜合禮盒</span>
+                        </div>
+                        <!-- New Taiwanese Items -->
+                        <div class="marquee-item"><img src="images/wax_apple.png" alt="黑珍珠蓮霧"><span>黑珍珠蓮霧</span></div>
+                        <div class="marquee-item"><img src="images/guava.png" alt="珍珠芭樂"><span>珍珠芭樂</span></div>
+                        <div class="marquee-item"><img src="images/jujube.png" alt="牛奶蜜棗"><span>牛奶蜜棗</span></div>
+                        <div class="marquee-item"><img src="images/cherry_tomatoes.png" alt="玉女小番茄"><span>玉女小番茄</span>
+                        </div>
+                        <!-- Clones for seamless looping will be handled by JS -->
+                    </div>
+                    <button class="marquee-btn right" id="marquee-right">&gt;</button>
+                </div>
+            </div>
+
+            <!-- Lightbox Modal -->
+            <div id="image-modal" class="modal">
+                <div class="modal-content-wrapper">
+                    <span class="close-btn">&times;</span>
+                    <img class="modal-content" id="modal-img">
+                </div>
+            </div>
+
+            <!-- Game Teaser -->
+            <div class="game-teaser">
+                <div class="teaser-text">
+                    <h2>體驗各種植樂趣</h2>
+                    <p>在線上種植專屬作物，收成後送您真實折扣券！</p>
+                    <button class="game-btn" onclick="navigateTo('farm-game')">進入農場</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: MARKET -->
+        <section id="market" class="page-section">
+            <header class="section-header">
+                <h2>農產市集</h2>
+                <p>為您精選最優質的當季食材</p>
+                <div class="market-filters">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="vegetable">蔬菜</button>
+                    <button class="filter-btn" data-filter="fruit">水果</button>
+                    <button class="filter-btn" data-filter="package">組合包</button>
+                </div>
+            </header>
+
+            <div class="product-grid">
+                <!-- User Items -->
+                <div class="product-card" data-category="fruit">
+                    <div class="card-img">
+                        <img src="images/apple.png" alt="Apple">
+                        <span class="tag">熱銷</span>
+                    </div>
+                    <div class="card-info">
+                        <h3>富士蘋果 (6入)</h3>
+                        <p class="price">NT$ 250</p>
+                        <button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <div class="product-card" data-category="vegetable">
+                    <div class="card-img">
+                        <img src="images/cabbage.png" alt="Cabbage">
+                    </div>
+                    <div class="card-info">
+                        <h3>高山高麗菜</h3>
+                        <p class="price">NT$ 80 / 顆</p>
+                        <button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <div class="product-card" data-category="package">
+                    <div class="card-img">
+                        <img src="images/taiwan_gift_box.png" alt="Gift">
+                    </div>
+                    <div class="card-info">
+                        <h3>綜合禮盒</h3>
+                        <p class="desc">蘋果+高麗菜+高山草莓</p>
+                        <p class="price">NT$ 1200</p>
+                        <button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <!-- New Items -->
+                <div class="product-card" data-category="fruit">
+                    <div class="card-img"><img src="images/wax_apple.png" alt="Wax Apple"><span class="tag">季節限定</span>
+                    </div>
+                    <div class="card-info">
+                        <h3>黑珍珠蓮霧</h3>
+                        <p class="price">NT$ 500 / 盒</p><button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <div class="product-card" data-category="fruit">
+                    <div class="card-img"><img src="images/guava.png" alt="Guava"></div>
+                    <div class="card-info">
+                        <h3>社頭珍珠芭樂</h3>
+                        <p class="price">NT$ 50 / 斤</p><button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <div class="product-card" data-category="fruit">
+                    <div class="card-img"><img src="images/jujube.png" alt="Jujube"></div>
+                    <div class="card-info">
+                        <h3>燕巢牛奶蜜棗</h3>
+                        <p class="price">NT$ 300 / 禮盒</p><button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+                <div class="product-card" data-category="fruit">
+                    <div class="card-img"><img src="images/cherry_tomatoes.png" alt="Tomatoes"></div>
+                    <div class="card-info">
+                        <h3>溫室玉女小番茄</h3>
+                        <p class="price">NT$ 150 / 盒</p><button class="add-cart-btn">加入購物車</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: FARM GAME -->
+        <section id="farm-game" class="page-section">
+            <div class="game-container">
+                <h2>開心農場</h2>
+                <div class="game-area">
+                    <div class="sky"></div>
+                    <div class="land">
+                        <div class="plot" data-status="empty">🌱</div>
+                        <div class="plot" data-status="empty">🌱</div>
+                        <div class="plot" data-status="empty">🌱</div>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <button>澆水 💧</button>
+                    <button>施肥 💩</button>
+                    <button>收成 🧺</button>
+                </div>
+                <p class="game-note">目前為預覽版，敬請期待完整功能！</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 四季農場. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="cart-modal-content">
+            <div class="cart-header">
+                <h2>您的購物車</h2>
+                <span class="close-cart">&times;</span>
+            </div>
+            <div class="cart-items" id="cart-items">
+                <!-- Cart items will be injected here JS -->
+                <p class="empty-cart-msg">購物車目前是空的</p>
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">總計: <span id="cart-total-price">NT$ 0</span></div>
+                <button class="checkout-btn" id="checkout-btn">前往結帳</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div id="purchase-modal" class="modal">
+        <div class="modal-content-wrapper purchase-modal-content">
+            <span class="close-purchase">&times;</span>
+            <div class="purchase-layout">
+                <div class="purchase-img-container">
+                    <img id="purchase-img" src="" alt="Product">
+                </div>
+                <div class="purchase-details">
+                    <h3 id="purchase-title">Product Name</h3>
+                    <p id="purchase-price" class="price">NT$ 0</p>
+
+                    <div class="form-group">
+                        <label>數量:</label>
+                        <div class="quantity-control">
+                            <button id="qty-minus">-</button>
+                            <span id="qty-val">1</span>
+                            <button id="qty-plus">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>運送方式:</label>
+                        <select id="shipping-method">
+                            <option value="delivery">宅配到府</option>
+                            <option value="store">超商取貨</option>
+                        </select>
+                    </div>
+
+                    <button id="confirm-add-btn" class="cta-btn">確認加入</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
