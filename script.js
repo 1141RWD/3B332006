@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const navBtns = document.querySelectorAll('.nav-btn');
     const sections = document.querySelectorAll('.page-section');
 
+    // Global State for Coupons (Persisted)
+    let globalCouponCount = parseInt(localStorage.getItem('globalCouponCount')) || 0;
+
+
     function navigateTo(targetId) {
         // Update Nav
         navBtns.forEach(btn => {
@@ -388,22 +392,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Visual Logic for Toggle
         if (couponToggle) {
-            // Reset toggle if previously checked but requirements strictly failed (optional, but good visual practice)
-            // But we keep user intent if possible. Here we just enforce disable state.
+            let isDisabled = false;
 
+            // Condition 1: Minimum Spend
             if (total < MIN_SPEND) {
-                couponToggle.disabled = true;
-                if (couponToggle.checked) couponToggle.checked = false; // Auto uncheck if dropped below limit
+                isDisabled = true;
                 couponWarning.style.display = 'block';
             } else {
-                couponToggle.disabled = false;
                 couponWarning.style.display = 'none';
             }
 
-            // Sync visual count color or text
+            // Condition 2: Must have coupons
             if (globalCouponCount <= 0) {
-                couponToggle.disabled = true;
-                // If user has no coupons, they can't use it even if they spend $10000
+                isDisabled = true;
+                // If disabled due to count, we might want a different message or just disable
+            }
+
+            couponToggle.disabled = isDisabled;
+
+            // Auto-uncheck if disabled
+            if (isDisabled && couponToggle.checked) {
+                couponToggle.checked = false;
+            }
+
+            // Update Label Style (Optional visual cue)
+            const label = document.querySelector('label[for="coupon-toggle"]');
+            if (label) {
+                label.style.opacity = isDisabled ? '0.5' : '1';
+                label.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
             }
         }
 
@@ -495,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Game State
     // Global Coupon State (Persists across game resets until page reload)
-    let globalCouponCount = 0;
+    // Coupon count now initialized at top with localStorage persistence
 
     function updateCouponUI() {
         const couponEl = document.getElementById('coupon-count');
@@ -843,6 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Award Coupon
         globalCouponCount++;
+        localStorage.setItem('globalCouponCount', globalCouponCount); // Save persistence
         updateCouponUI();
 
         // Show Message on UI instead of Alert

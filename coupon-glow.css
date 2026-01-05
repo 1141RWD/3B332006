@@ -1,0 +1,34 @@
+/* Coupon Toggle Glow Effect */
+
+/* When toggle is checked - add green glow to background slider */
+#coupon-toggle:checked+#coupon-slider {
+    background-color: #4CAF50 !important;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8),
+        0 0 40px rgba(76, 175, 80, 0.4),
+        inset 0 0 10px rgba(76, 175, 80, 0.3) !important;
+    animation: pulse-glow 1.5s infinite !important;
+}
+
+/* Pulsing glow animation */
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.8),
+            0 0 40px rgba(76, 175, 80, 0.4),
+            inset 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(76, 175, 80, 1),
+            0 0 60px rgba(76, 175, 80, 0.6),
+            inset 0 0 15px rgba(76, 175, 80, 0.5);
+    }
+}
+
+/* Move the white circle when checked */
+#coupon-toggle:checked~#coupon-slider-circle {
+    transform: translateX(24px) !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.9),
+        0 0 20px rgba(76, 175, 80, 0.5) !important;
+}
