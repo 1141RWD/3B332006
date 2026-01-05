@@ -10,23 +10,187 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@400;600&display=swap"
         rel="stylesheet">
+    <style>
+        /* Mobile Hamburger Logic - EDITED: Always show button if we want the drawer to be the main way to access "Settings" */
+        /* But usually we hide nav links on mobile. */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* Admin Access Control */
+        .admin-only {
+            display: none !important;
+        }
+
+        body.is-admin .admin-only {
+            display: block !important;
+            /* Or flex depending on context, handled below if needed */
+        }
+
+        /* Navbar specific override to keep layout clean */
+        body.is-admin ul.nav-links .admin-only {
+            display: list-item !important;
+            /* or block/inline-block */
+        }
+
+        body.is-admin .drawer-item.admin-only {
+            display: flex !important;
+        }
+
+        /* Ensure menu button is visible and BLACK color as requested */
+        #menu-btn {
+            display: block !important;
+            color: #333 !important;
+            /* Dark Black/Gray */
+        }
+
+        /* Theme Grid Cards */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2x2 Grid for 4 seasons */
+            gap: 10px;
+            padding: 0 15px 20px 15px;
+        }
+    </style>
 </head>
 
 <body>
 
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="logo">四季農場</div>
-        <ul class="nav-links">
+    <nav class="navbar" style="justify-content: space-between; align-items: center; flex-wrap: nowrap;">
+        <div style="display: flex; align-items: center;">
+            <button id="menu-btn"
+                style="font-size: 1.5rem; background: none; border: none; cursor: pointer; margin-right: 10px; color: #333;">☰</button>
+            <button id="theme-open-btn"
+                style="font-size: 1.4rem; background: none; border: none; cursor: pointer; margin-right: 15px;"
+                title="更換主題">🎨</button>
+            <div class="logo" style="white-space: nowrap;">四季農場</div>
+        </div>
+
+        <ul class="nav-links" style="display: flex; gap: 20px; white-space: nowrap;">
             <li><a href="#" class="nav-btn active" data-target="home">首頁</a></li>
             <li><a href="#" class="nav-btn" data-target="market">農產市集</a></li>
             <li><a href="#" class="nav-btn" data-target="farm-game">開心農場</a></li>
-            <li><a href="#" class="nav-btn" data-target="admin">商品管理</a></li>
+            <li class="admin-only"><a href="#" class="nav-btn" data-target="admin">商品管理</a></li>
         </ul>
-        <div class="cart-icon" id="cart-btn">
+
+        <div class="cart-icon" id="cart-btn" style="display: flex; align-items: center; white-space: nowrap;">
             🛒 <span id="cart-count">0</span>
         </div>
     </nav>
+
+    <!-- Side Drawer -->
+    <div id="side-drawer"
+        style="position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #fff; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1000; overflow-y: auto; display: flex; flex-direction: column;">
+
+        <div class="drawer-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">🌿</span>
+                <h3>四季農場</h3>
+            </div>
+            <button id="close-drawer-btn"
+                style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto;">
+            <!-- Section: Admin (Renamed from Member) -->
+            <h4 class="drawer-section-title">管理員專區</h4>
+            <div class="drawer-list">
+                <div class="drawer-item" id="drawer-login-btn">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon user-icon">�️</span>
+                        <span id="drawer-login-text">管理者登入</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 1: Navigation -->
+            <h4 class="drawer-section-title">網站導覽</h4>
+            <div class="drawer-list">
+                <div class="drawer-item" data-target="home">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon">🏠</span> <span>首頁</span>
+                    </div>
+                </div>
+                <div class="drawer-item" data-target="market">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon">🛒</span> <span>農產市集</span>
+                    </div>
+                </div>
+                <div class="drawer-item admin-only" data-target="admin">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon">⚙️</span> <span>後台管理</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Game -->
+            <h4 class="drawer-section-title">遊戲專區</h4>
+            <div class="drawer-list">
+                <div class="drawer-item" data-target="farm-game">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon">🌾</span> <span>開心農場</span>
+                    </div>
+                </div>
+                <div class="drawer-item" id="drawer-tutorial-btn">
+                    <div style="display: flex; align-items: center;">
+                        <span class="drawer-icon">📖</span> <span>教學手冊</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px; padding: 30px; text-align: center;">
+            <span class="close-btn" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+            <h2 style="color: #2E7D32; margin-bottom: 20px;">管理者登入</h2>
+            <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" id="username" placeholder="帳號 (admin)" required
+                    style="padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                <input type="password" id="password" placeholder="密碼 (1234)" required
+                    style="padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                <button type="submit" class="cta-btn" style="width: 100%;">登入</button>
+            </form>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">僅限管理員使用</p>
+        </div>
+    </div>
+
+    <!-- Theme Selection Modal -->
+    <div id="theme-modal" class="modal">
+        <div class="modal-content"
+            style="max-width: 500px; padding: 25px; text-align: center; background-color: rgba(0, 0, 0, 0.9); border: 1px solid #444;">
+            <span class="close-btn" onclick="document.getElementById('theme-modal').style.display='none'"
+                style="color: white;">&times;</span>
+            <h2 style="color: white; margin-bottom: 25px;">選擇四季風格</h2>
+
+            <div
+                style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; margin: 0 auto;">
+                <button class="cta-btn theme-option" data-weather="spring" onclick="setWeatherTheme('spring')"
+                    style="background: #E91E63; border: none; font-size: 1.2rem; padding: 15px;">🌸 春暖花開</button>
+
+                <button class="cta-btn theme-option" data-weather="summer" onclick="setWeatherTheme('summer')"
+                    style="background: #FFC107; color: #333; border: none; font-size: 1.2rem; padding: 15px;">🌻
+                    夏日艷陽</button>
+
+                <button class="cta-btn theme-option" data-weather="autumn" onclick="setWeatherTheme('autumn')"
+                    style="background: #FF5722; border: none; font-size: 1.2rem; padding: 15px;">🍁 秋楓瑟瑟</button>
+
+                <button class="cta-btn theme-option" data-weather="winter" onclick="setWeatherTheme('winter')"
+                    style="background: #2196F3; border: none; font-size: 1.2rem; padding: 15px;">❄️ 冬雪靄靄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay (Drawer specific) -->
+    <div id="drawer-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; display: none;">
+    </div>
 
     <!-- Main Content Container (SPA Shells) -->
     <main class="content-container">
@@ -69,6 +233,79 @@
                 </div>
             </div>
 
+            <!-- Info Section: Announcement + Prices -->
+            <div class="info-container"
+                style="display: flex; gap: 20px; margin: 40px auto; max-width: 1200px; padding: 0 20px;">
+                <!-- Announcement (80%) -->
+                <div class="announcement-box"
+                    style="flex: 4; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3
+                        style="color: #2E7D32; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                        📢 最新公告</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                        <li><span style="color: #666; font-size: 0.9em;">[2024-01-06]</span> 🎉
+                            <strong>冬季豐收祭</strong>開始了！全場商品 9折優惠中。
+                        </li>
+                        <li><span style="color: #666; font-size: 0.9em;">[2024-01-05]</span> 🥬
+                            <strong>高山高麗菜</strong>新貨到，口感清脆鮮甜。
+                        </li>
+                        <li><span style="color: #666; font-size: 0.9em;">[2024-01-01]</span> 🚜
+                            <strong>小遊戲排行榜</strong>上線，挑戰成為傳說級農夫！
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Market Prices (20%) -->
+                <div class="market-price-box"
+                    style="flex: 1; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3
+                        style="color: #E64A19; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                        📊 今日菜價</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 2;">
+                        <li style="display: flex; justify-content: space-between;"><span>高麗菜</span> <span
+                                style="color: #D32F2F; font-weight: bold;">$25</span></li>
+                        <li style="display: flex; justify-content: space-between;"><span>牛番茄</span> <span
+                                style="color: #D32F2F; font-weight: bold;">$60</span></li>
+                        <li style="display: flex; justify-content: space-between;"><span>青蔥</span> <span
+                                style="color: #D32F2F; font-weight: bold;">$45</span></li>
+                        <li style="display: flex; justify-content: space-between;"><span>玉米</span> <span
+                                style="color: #D32F2F; font-weight: bold;">$15</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- News Section -->
+            <div class="news-section" style="margin: 40px auto; max-width: 1200px; padding: 0 20px;">
+                <h3 style="color: #2E7D32; margin-bottom: 20px; font-size: 1.5rem;">📰 農業新聞</h3>
+                <div class="news-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="news-card"
+                        style="background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="images/news1.png" alt="News 1" style="width: 100%; height: 200px; object-fit: cover;">
+                        <div class="news-content" style="padding: 15px;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">智慧農業新趨勢</h4>
+                            <p style="color: #666; font-size: 0.9rem;">運用無人機與感測器，提升作物產量與品質，邁向精準農業時代。</p>
+                        </div>
+                    </div>
+                    <div class="news-card"
+                        style="background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="images/news2.png" alt="News 2" style="width: 100%; height: 200px; object-fit: cover;">
+                        <div class="news-content" style="padding: 15px;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">冬季蔬菜大豐收</h4>
+                            <p style="color: #666; font-size: 0.9rem;">氣候穩定，全台各地葉菜類盛產，價格親民，正是品嘗的好時機。</p>
+                        </div>
+                    </div>
+                    <div class="news-card"
+                        style="background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="images/news3.png" alt="News 3" style="width: 100%; height: 200px; object-fit: cover;">
+                        <div class="news-content" style="padding: 15px;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">假日農市熱鬧登場</h4>
+                            <p style="color: #666; font-size: 0.9rem;">本週末於市民廣場舉辦小農市集，歡迎民眾前往採購新鮮在地食材。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Lightbox Modal -->
             <div id="image-modal" class="modal">
                 <div class="modal-content-wrapper">
@@ -77,14 +314,7 @@
                 </div>
             </div>
 
-            <!-- Game Teaser -->
-            <div class="game-teaser">
-                <div class="teaser-text">
-                    <h2>體驗各種植樂趣</h2>
-                    <p>在線上種植專屬作物，收成後送您真實折扣券！</p>
-                    <button class="game-btn" onclick="navigateTo('farm-game')">進入農場</button>
-                </div>
-            </div>
+
         </section>
 
         <!-- SECTION: MARKET -->
@@ -97,6 +327,10 @@
                     <button class="filter-btn" data-filter="vegetable">蔬菜</button>
                     <button class="filter-btn" data-filter="fruit">水果</button>
                     <button class="filter-btn" data-filter="package">組合包</button>
+                    <div id="market-coupon-display"
+                        style="display: inline-block; margin-left: 20px; font-weight: bold; color: #E91E63; background: #FCE4EC; padding: 5px 15px; border-radius: 20px;">
+                        🎟️ 抵用券: <span id="coupon-count">0</span> 張
+                    </div>
                 </div>
             </header>
 
@@ -165,26 +399,179 @@
                     </div>
                 </div>
             </div>
+
         </section>
 
-        <!-- SECTION: FARM GAME -->
+
+
+        <!-- SECTION: FARM GAME (Phase 1) -->
         <section id="farm-game" class="page-section">
-            <div class="game-container">
-                <h2>開心農場</h2>
-                <div class="game-area">
-                    <div class="sky"></div>
-                    <div class="land">
-                        <div class="plot" data-status="empty">🌱</div>
-                        <div class="plot" data-status="empty">🌱</div>
-                        <div class="plot" data-status="empty">🌱</div>
+            <div class="farm-container">
+                <div class="game-header"
+                    style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">開心農場</h2>
+                    <button id="tutorial-btn" class="game-btn info" style="font-size: 0.9rem; padding: 5px 15px;">📖
+                        教學手冊</button>
+                </div>
+
+                <!-- Stats Header -->
+                <div class="farm-stats">
+                    <div class="stat-box">📅 第 <span id="farm-day">1</span> 天</div>
+                    <div class="stat-box">💰 資金: <span id="farm-money">1000</span></div>
+                    <div class="stat-box">⚡ 體力: <span id="farm-stamina">3</span>/3</div>
+                    <div class="stat-box">💧 水分: <span id="farm-water">100</span>%</div>
+                </div>
+
+                <!-- Inventory -->
+                <div id="farm-inventory" class="farm-inventory">
+                    <div class="inv-item" data-type="fertilizer" title="使用肥料 (+50 進度)">
+                        🧪 肥料: <span id="inv-fertilizer">0</span> <button class="use-btn"
+                            onclick="useItem('fertilizer')">用</button>
+                    </div>
+                    <div class="inv-item" data-type="pesticide" title="使用除蟲劑 (預防蟲害)">
+                        🛡️ 除蟲劑: <span id="inv-pesticide">0</span> <button class="use-btn"
+                            onclick="useItem('pesticide')">用</button>
                     </div>
                 </div>
-                <div class="game-controls">
-                    <button>澆水 💧</button>
-                    <button>施肥 💩</button>
-                    <button>收成 🧺</button>
+
+                <!-- Game Scene (Dynamic Background) -->
+                <div id="farm-scene" class="farm-scene" style="background-image: url('images/back1.png');">
+                    <div class="progress-display">
+                        生長進度: <span id="farm-progress">0</span>%
+                    </div>
                 </div>
-                <p class="game-note">目前為預覽版，敬請期待完整功能！</p>
+
+                <!-- Controls -->
+                <div class="farm-controls">
+                    <button id="farm-action-btn" class="game-btn primary">播種/照料 (-1 ⚡)</button>
+                    <button id="farm-force-harvest-btn" class="game-btn warning" style="display:none;">強制收成
+                        ($500)</button>
+                    <button id="farm-water-btn" class="game-btn info">補水 ($500)</button>
+                    <button id="farm-shop-btn" class="game-btn secondary">商店 🏪</button>
+                    <button id="farm-end-btn" class="game-btn danger">結束這一天 🌙</button>
+                </div>
+            </div>
+
+            <!-- Situation Modal -->
+            <div id="situation-modal" class="modal">
+                <div class="modal-content situation-content">
+                    <h3 id="situation-title">預兆降臨</h3>
+                    <img id="situation-img" src="" alt="Situation"
+                        style="width: 100%; max-width: 400px; border-radius: 8px; margin: 10px 0;">
+                    <p id="situation-desc">下個回合即將發生...</p>
+                    <button id="situation-confirm-btn" class="game-btn">迎接新的一天</button>
+                </div>
+            </div>
+
+            <!-- Shop Modal -->
+            <div id="shop-modal" class="modal">
+                <div class="modal-content shop-content">
+                    <h3>農具商店</h3>
+                    <div class="shop-grid">
+                        <div class="shop-item">
+                            <div class="icon">🧪</div>
+                            <h4>強力肥料 ($100)</h4>
+                            <p>加速成長 (+5, 限5次/日)</p>
+                            <div class="buy-controls">
+                                <input type="number" id="qty-fertilizer" value="1" min="1" class="qty-input">
+                                <button class="buy-btn" onclick="buyItem('fertilizer', 100)">購買</button>
+                            </div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="icon">🛡️</div>
+                            <h4>高效除蟲劑 ($200)</h4>
+                            <p>預防蟲害侵襲</p>
+                            <div class="buy-controls">
+                                <input type="number" id="qty-pesticide" value="1" min="1" class="qty-input">
+                                <button class="buy-btn" onclick="buyItem('pesticide', 200)">購買</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="close-shop-btn" onclick="closeShop()">關閉</button>
+                </div>
+            </div>
+
+            <!-- Game End Modal -->
+            <div id="game-end-modal" class="modal">
+                <div class="modal-content end-content" style="text-align: center; padding: 30px;">
+                    <h2 style="color: #FFC107; font-size: 2rem; margin-bottom: 20px;">🏆 遊戲結束 🏆</h2>
+                    <p style="font-size: 1.2rem;">最終收益</p>
+                    <h1 id="end-score" style="font-size: 3rem; color: #4CAF50; margin: 10px 0;">$0</h1>
+                    <div class="rank-display"
+                        style="background: #FFF8E1; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                        <p>評價</p>
+                        <h1 id="end-rank" style="font-size: 4rem; margin: 10px 0;">?</h1>
+                        <p id="end-comment" style="color: #666;"></p>
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                        <button class="theme-btn" onclick="setWeatherTheme('cloudy')"
+                            style="padding: 8px; border: 1px solid #ddd; background: #fff; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                            <span>☁️</span>
+                            <span style="font-size: 0.8rem;">陰天</span>
+                        </button>
+                        <!-- New Themes -->
+                        <button class="theme-btn" onclick="setWeatherTheme('snow')"
+                            style="padding: 8px; border: 1px solid #ddd; background: #fff; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                            <span>❄️</span>
+                            <span style="font-size: 0.8rem;">雪天</span>
+                        </button>
+                        <button class="theme-btn" onclick="setWeatherTheme('night')"
+                            style="padding: 8px; border: 1px solid #ddd; background: #fff; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                            <span>🌙</span>
+                            <span style="font-size: 0.8rem;">晚安</span>
+                        </button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #999; margin-top: 10px; text-align: center;">切換背景主題</p>
+                    <!-- New Gift Message -->
+                    <p id="end-gift-msg" style="color: #E91E63; font-weight: bold; margin: 15px 0; font-size: 1.1rem;">
+                    </p>
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="restart-btn" class="cta-btn" style="flex: 1; font-size: 1rem;">再次挑戰 🔄</button>
+                        <button id="end-close-btn" class="cta-btn"
+                            style="flex: 1; font-size: 1rem; background-color: #9E9E9E;">關閉</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Modal -->
+            <div id="tutorial-modal" class="modal">
+                <div class="modal-content tutorial-content"
+                    style="max-width: 600px; padding: 30px; background: #333; color: white;">
+                    <h2
+                        style="color: #64B5F6; border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 20px;">
+                        📖 農場指南</h2>
+
+                    <div style="text-align: left; line-height: 1.6;">
+                        <h4 style="color: #4CAF50;">🌱 基礎操作</h4>
+                        <ul style="margin-bottom: 15px; padding-left: 20px;">
+                            <li><strong>播種/照料</strong>: 消耗體力與水分，增加作物生長進度。</li>
+                            <li><strong>補水</strong>: 花費 $500 將水分補滿。水分不足無法生長。</li>
+                            <li><strong>體力</strong>: 每天 3 點，耗盡後需結束回合。</li>
+                        </ul>
+
+                        <h4 style="color: #FF9800;">🎒 道具使用</h4>
+                        <ul style="margin-bottom: 15px; padding-left: 20px;">
+                            <li><strong>強力肥料</strong> (🧪): +5% 生長進度。每日限用 5 次。</li>
+                            <li><strong>除蟲劑</strong> (🛡️): 保護作物免受隔日蟲災侵襲。</li>
+                        </ul>
+
+                        <h4 style="color: #F44336;">🌪️ 天災應對</h4>
+                        <ul style="margin-bottom: 15px; padding-left: 20px;">
+                            <li><strong>颱風</strong>: 若預告颱風，隔日可選擇「強制收成」($500) 止損，否則作物將全毀。</li>
+                            <li><strong>蟲災</strong>: 若預告蟲災，務必在當日使用除蟲劑，否則作物將被啃食歸零。</li>
+                        </ul>
+
+                        <h4 style="color: #9C27B0;">💰 賺錢秘訣</h4>
+                        <ul style="margin-bottom: 15px; padding-left: 20px;">
+                            <li><strong>市場波動</strong>: 若預告市場大好，隔日收成獲得 $1500 (平時 $1000)。</li>
+                            <li><strong>10日挑戰</strong>: 遊戲共10天，結束後將依總收益評級 (S級需 $5000+)。</li>
+                        </ul>
+                    </div>
+
+                    <button class="cta-btn" onclick="document.getElementById('tutorial-modal').style.display='none'"
+                        style="width: 100%; margin-top: 10px;">我從學會了！</button>
+                </div>
             </div>
         </section>
 
@@ -240,6 +627,9 @@
         <p>&copy; 2025 四季農場. All Rights Reserved.</p>
     </footer>
 
+    <!-- Tutorial Modal -->
+
+
     <!-- Cart Modal -->
     <div id="cart-modal" class="modal">
         <div class="cart-modal-content">
@@ -252,6 +642,26 @@
                 <p class="empty-cart-msg">購物車目前是空的</p>
             </div>
             <div class="cart-footer">
+                <!-- Coupon Toggle Section -->
+                <div class="coupon-section" style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="switch-container" style="display: flex; align-items: center; cursor: pointer;">
+                            <span style="font-weight: bold; margin-right: 10px;">🎫 使用抵用券 ($100)</span>
+                            <div style="position: relative; width: 50px; height: 26px;">
+                                <input type="checkbox" id="coupon-toggle" style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider"
+                                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                                <span class="slider-circle"
+                                    style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                            </div>
+                        </label>
+                        <span id="coupon-status-msg" style="font-size: 0.9em; color: #888;">(持有: <span
+                                id="cart-coupon-count">0</span>)</span>
+                    </div>
+                    <p id="coupon-warning" style="color: #F44336; font-size: 0.85em; margin-top: 5px; display: none;">⚠️
+                        需消費滿 NT$ 300 才可使用</p>
+                </div>
+
                 <div class="cart-total">總計: <span id="cart-total-price">NT$ 0</span></div>
                 <button class="checkout-btn" id="checkout-btn">前往結帳</button>
             </div>
@@ -294,6 +704,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="script-extra.js"></script>
 </body>
 
 </html>

@@ -382,50 +382,103 @@ body {
     text-align: center;
 }
 
-.game-area {
-    margin: 2rem auto;
-    width: 100%;
-    max-width: 600px;
-    height: 300px;
-    background: #87CEEB;
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.land {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 40%;
-    background: #8B4513;
+/* Strategy Game & Shop */
+.stats-card {
     display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    padding-bottom: 2rem;
+    justify-content: center;
+    gap: 2rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
 }
 
+.stat-item {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.omen-display {
+    background: #FFF3E0;
+    border: 2px solid #FF9800;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+    }
+}
+
+.omen-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #E65100;
+}
+
+.omen-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    display: none;
+    /* Hidden unless src is set */
+}
+
+/* Updated Plot for Strategy Info */
 .plot {
-    font-size: 2rem;
-    cursor: pointer;
-    transition: transform 0.2s;
+    position: relative;
+    /* Existing basic styles maintained via class, adding specific overrides */
+    flex-direction: column;
 }
 
-.plot:hover {
-    transform: scale(1.2);
+.plot-info-overlay {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
 }
 
-/* RWD */
-@media (max-width: 768px) {
-    .nav-links {
-        display: none;
-        /* Simplified for mobile, ideally adds hamburger menu */
-    }
-
-    .hero h1 {
-        font-size: 1.8rem;
-    }
+.plot:hover .plot-info-overlay {
+    opacity: 1;
 }
+
+/* Shop Grid */
+.game-controls-panel {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+
 
 /* Cart Styles */
 .cart-icon {
@@ -772,4 +825,286 @@ body {
 .form-group select:focus {
     border-color: var(--primary-color);
     outline: none;
+}
+
+/* --- FARM GAME PHASE 1 --- */
+
+#farm-game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f8ff;
+    padding: 20px;
+}
+
+.farm-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Stats */
+.farm-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    background: #FFECB3;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: bold;
+    color: #5D4037;
+}
+
+.stat-box {
+    font-size: 1.1rem;
+}
+
+/* Scene */
+.farm-scene {
+    width: 100%;
+    aspect-ratio: 16/9;
+    /* Standard Landscape */
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    transition: background-image 0.5s ease;
+}
+
+.progress-display {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+/* Controls */
+.farm-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.game-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    font-weight: bold;
+}
+
+.game-btn:active {
+    transform: scale(0.95);
+}
+
+.game-btn.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.game-btn.primary.harvest-mode {
+    background: #FFD700;
+    /* Gold */
+    color: #333;
+    animation: pulse 1s infinite;
+}
+
+.game-btn.danger {
+    background: #FF5722;
+    color: white;
+}
+
+.game-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Situation Modal */
+.situation-content {
+    background: #fff;
+    padding: 30px;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 16px;
+    text-align: center;
+    border: 4px solid #FF5722;
+    /* Warning Color */
+}
+
+#situation-title {
+    color: #D32F2F;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+#situation-desc {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Shop & Inventory (Phase 2) */
+
+/* Inventory */
+.farm-inventory {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.inv-item {
+    background: #e8f5e9;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #c8e6c9;
+}
+
+.use-btn {
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.use-btn:active {
+    transform: scale(0.95);
+}
+
+/* Shop Modal */
+.shop-content {
+    background: white;
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.shop-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.shop-item {
+    background: #fff;
+    border: 2px solid #eee;
+    padding: 15px;
+    border-radius: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.shop-item:hover {
+    border-color: #2196F3;
+    transform: translateY(-5px);
+}
+
+.shop-item .icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.shop-item h4 {
+    margin: 5px 0;
+    color: #333;
+}
+
+.shop-item p {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.buy-btn {
+    width: 100%;
+    padding: 8px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.buy-btn:hover {
+    background: #1976D2;
+}
+
+.close-shop-btn {
+    background: #999;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.game-btn.secondary {
+    background: #9C27B0;
+    color: white;
+}
+
+.game-btn.warning {
+    background: #F44336;
+    /* Red for alert/emergency */
+    color: white;
+}
+
+/* Shop Controls */
+.buy-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.qty-input {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
 }

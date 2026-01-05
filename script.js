@@ -5,24 +5,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.page-section');
 
     function navigateTo(targetId) {
-        // Remove active class from buttons
+        // Update Nav
         navBtns.forEach(btn => {
-            btn.classList.remove('active');
             if (btn.dataset.target === targetId) {
                 btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
             }
         });
 
-        // Hide all sections and show target
-        sections.forEach(section => {
-            section.classList.remove('active');
-            if (section.id === targetId) {
-                section.classList.add('active');
+        // Show Section
+        sections.forEach(sec => {
+            if (sec.id === targetId) {
+                sec.classList.add('active');
+            } else {
+                sec.classList.remove('active');
             }
         });
 
-        // Scroll to top
-        window.scrollTo(0, 0);
+        // Marquee Logic Pausing
+        if (targetId === 'home') {
+            marqueeTrack.style.animationPlayState = 'running';
+        } else {
+            marqueeTrack.style.animationPlayState = 'paused';
+        }
     }
 
     // Bind click events to nav buttons
@@ -371,7 +377,56 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        cartTotalElement.innerText = `NT$ ${total}`;
+        // Coupon Logic in Cart
+        const couponToggle = document.getElementById('coupon-toggle');
+        const couponWarning = document.getElementById('coupon-warning');
+        const cartCouponCount = document.getElementById('cart-coupon-count');
+        const MIN_SPEND = 300;
+
+        // Update Coupon Count Display
+        if (cartCouponCount) cartCouponCount.innerText = globalCouponCount;
+
+        // Visual Logic for Toggle
+        if (couponToggle) {
+            // Reset toggle if previously checked but requirements strictly failed (optional, but good visual practice)
+            // But we keep user intent if possible. Here we just enforce disable state.
+
+            if (total < MIN_SPEND) {
+                couponToggle.disabled = true;
+                if (couponToggle.checked) couponToggle.checked = false; // Auto uncheck if dropped below limit
+                couponWarning.style.display = 'block';
+            } else {
+                couponToggle.disabled = false;
+                couponWarning.style.display = 'none';
+            }
+
+            // Sync visual count color or text
+            if (globalCouponCount <= 0) {
+                couponToggle.disabled = true;
+                // If user has no coupons, they can't use it even if they spend $10000
+            }
+        }
+
+        let displayTotal = total;
+        if (couponToggle && couponToggle.checked) {
+            displayTotal = Math.max(0, total - 100);
+        }
+
+        cartTotalElement.innerText = `NT$ ${displayTotal}`;
+
+        // Listener for toggle to update price immediately without re-rendering items
+        // We need to attach this only once ideally, but here simplicity prevails.
+        // To avoid multiple listeners, we can handle it via a named function or check existence.
+        // A cleaner way in this structure is simply updating the text here based on state.
+        if (couponToggle) {
+            couponToggle.onchange = () => {
+                let dTotal = total;
+                if (couponToggle.checked) {
+                    dTotal = Math.max(0, total - 100);
+                }
+                cartTotalElement.innerText = `NT$ ${dTotal}`;
+            };
+        }
     }
 
     function removeFromCart(index) {
@@ -384,42 +439,476 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) {
             alert('購物車是空的，無法結帳！');
-        } else {
-            alert(`結帳成功！總金額為 NT$ ${cartTotalElement.innerText.replace('NT$ ', '')}。\n感謝您的購買！`);
-            cart = [];
-            updateCartUI();
-            updateCartCount();
-            cartModal.style.display = "none";
+            return;
         }
+
+        // Recalculate basic total
+        let total = 0;
+        cart.forEach(item => total += item.price * item.quantity);
+
+        const couponToggle = document.getElementById('coupon-toggle');
+        let useCoupon = couponToggle && couponToggle.checked;
+        let discount = 0;
+
+        // Validation & Prompt
+        if (useCoupon) {
+            if (total >= 300 && globalCouponCount > 0) {
+                discount = 100;
+                globalCouponCount--;
+                updateCouponUI();
+            } else {
+                // Should not happen if UI is consistent, but safety check
+                alert("無法使用抵用券：金額不足或無券可用");
+                return;
+            }
+        } else {
+            // "Forgot Coupon?" Check
+            if (total >= 300 && globalCouponCount > 0) {
+                const wantToUse = confirm(`您達到低消且持有 ${globalCouponCount} 張抵用券，忘記使用了嗎？\n\n按「確定」立即折抵 NT$ 100\n按「取消」維持原價結帳`);
+                if (wantToUse) {
+                    discount = 100;
+                    globalCouponCount--;
+                    updateCouponUI();
+                }
+            }
+        }
+
+        const finalTotal = Math.max(0, total - discount);
+
+        let msg = `結帳成功！\n\n小計: NT$ ${total}\n`;
+        if (discount > 0) {
+            msg += `折扣: NT$ ${discount} (抵用券)\n`;
+        }
+        msg += `實付金額: NT$ ${finalTotal}\n\n感謝您的購買！`;
+
+        alert(msg);
+
+        cart = [];
+        updateCartUI();
+        updateCartCount();
+        cartModal.style.display = "none";
+        // Reset toggle for next time
+        if (couponToggle) couponToggle.checked = false;
     });
 
-    // --- Simple Farm Game Interaction ---
-    const plots = document.querySelectorAll('.plot');
-    plots.forEach(plot => {
-        plot.addEventListener('click', () => {
-            if (plot.innerHTML === '🌱') {
-                plot.innerHTML = '🌿'; // Grow
-            } else if (plot.innerHTML === '🌿') {
-                plot.innerHTML = '🍎'; // Fruit
-            } else if (plot.innerHTML === '🍎') {
-                plot.innerHTML = '🌱'; // Reset
-                alert('收成成功！獲得 10 點積分！');
+    // --- Farm Game Phase 1 Logic ---
+
+    // Game State
+    // Global Coupon State (Persists across game resets until page reload)
+    let globalCouponCount = 0;
+
+    function updateCouponUI() {
+        const couponEl = document.getElementById('coupon-count');
+        if (couponEl) {
+            couponEl.textContent = globalCouponCount;
+        }
+    }
+
+    const farmState = {
+        day: 1,
+        money: 1000,
+        stamina: 3,
+        progress: 0, // 0-100
+        health: 100,
+        water: 100, // New: Water Level
+        inventory: {
+            fertilizer: 0,
+            pesticide: 0
+        },
+        isProtected: false,
+        dailyFertilizerUse: 0, // NEW: Limit 5
+        activeDisaster: null, // 'typhoon', 'pest', 'market'
+        nextDisaster: null, // Forecast for tomorrow
+        pendingEvents: []
+    };
+
+    // DOM Elements
+    const farmDayEl = document.getElementById('farm-day');
+    const farmMoneyEl = document.getElementById('farm-money');
+    const farmStaminaEl = document.getElementById('farm-stamina');
+    const farmProgressEl = document.getElementById('farm-progress');
+    const farmWaterEl = document.getElementById('farm-water'); // New
+    const farmSceneEl = document.getElementById('farm-scene');
+
+    // Inventory Elements
+    const invFertilizerEl = document.getElementById('inv-fertilizer');
+    const invPesticideEl = document.getElementById('inv-pesticide');
+
+    // Controls
+    const actionBtn = document.getElementById('farm-action-btn');
+    const forceHarvestBtn = document.getElementById('farm-force-harvest-btn'); // New
+    const waterBtn = document.getElementById('farm-water-btn');
+    const shopBtn = document.getElementById('farm-shop-btn');
+    const endTurnBtn = document.getElementById('farm-end-btn');
+
+    // Tutorial
+    const tutorialBtn = document.getElementById('tutorial-btn');
+    if (tutorialBtn) {
+        tutorialBtn.addEventListener('click', () => {
+            document.getElementById('tutorial-modal').style.display = 'flex';
+        });
+    }
+
+    // Modals
+    const situationModal = document.getElementById('situation-modal');
+    const shopModal = document.getElementById('shop-modal');
+
+    const situationImg = document.getElementById('situation-img');
+    const situationDesc = document.getElementById('situation-desc');
+    const situationConfirmBtn = document.getElementById('situation-confirm-btn');
+
+    // 1. Update Visuals
+    function updateFarmUI() {
+        if (!farmDayEl) return; // Guard clause if elements not found
+
+        // Stats
+        farmDayEl.textContent = farmState.day;
+        farmMoneyEl.textContent = farmState.money;
+        farmStaminaEl.textContent = farmState.stamina;
+        farmProgressEl.textContent = farmState.progress;
+        if (farmWaterEl) farmWaterEl.textContent = farmState.water; // Update Water
+
+        // Inventory
+        if (invFertilizerEl) invFertilizerEl.textContent = farmState.inventory.fertilizer;
+        if (invPesticideEl) invPesticideEl.textContent = farmState.inventory.pesticide;
+
+        // Background Logic
+        let bg = 'back1.png'; // Default / Empty
+        if (farmState.progress > 0 && farmState.progress < 100) {
+            bg = 'back2.png'; // Growing
+        } else if (farmState.progress >= 100) {
+            bg = 'back3.png'; // Harvest Ready
+        }
+        farmSceneEl.style.backgroundImage = `url('images/${bg}')`;
+
+        // Button State
+        actionBtn.disabled = farmState.stamina <= 0;
+        if (farmState.progress >= 100) {
+            actionBtn.textContent = "收穫 (+$1000)";
+            actionBtn.classList.add('harvest-mode');
+        } else {
+            actionBtn.textContent = "播種/照料 (水-20% | ⚡-1)";
+            actionBtn.classList.remove('harvest-mode');
+        }
+
+        if (waterBtn) waterBtn.disabled = farmState.water >= 100; // Disable if full
+    }
+
+    // 2. Action Handlers
+    if (actionBtn) {
+        actionBtn.addEventListener('click', () => {
+            if (farmState.stamina > 0) {
+                // Logic: Harvest or Grow
+                if (farmState.progress >= 100) {
+                    // Harvest
+                    // Check for Market Boom
+                    let reward = 1000;
+                    if (farmState.activeDisaster === 'market') {
+                        reward = 1500;
+                        alert('市場行情大好！農產品價格飆升！');
+                    }
+
+                    farmState.money += reward; // New Reward
+                    farmState.progress = 0; // Reset to back1
+                    farmState.stamina--;
+                    farmState.isProtected = false; // Reset protection
+                    alert(`大豐收！獲得 $${reward}`);
+                } else {
+                    // Grow logic with Water
+                    if (farmState.water >= 20) {
+                        farmState.stamina--;
+                        farmState.water -= 20; // Reduce Water
+                        farmState.progress = Math.min(100, farmState.progress + 34);
+                    } else {
+                        alert('水分不足！請補充水分。');
+                        return; // Exit
+                    }
+                }
+                updateFarmUI();
+            } else {
+                alert('體力不足，請結束這一天！');
             }
         });
-    });
+    }
+
+    // Force Harvest Logic
+    if (forceHarvestBtn) {
+        forceHarvestBtn.addEventListener('click', () => {
+            if (confirm('確定要強制收成嗎？收益將減半 ($500)，且生長進度歸零。')) {
+                farmState.money += 500;
+                farmState.progress = 0;
+                farmState.stamina--;
+                farmState.activeDisaster = null; // Clear disaster risk (field empty)
+                alert('已強制收成！獲得 $500。');
+                updateFarmUI();
+                forceHarvestBtn.style.display = 'none'; // Hide after use
+            }
+        });
+    }
+
+    if (shopBtn) {
+        shopBtn.addEventListener('click', () => {
+            shopModal.style.display = 'flex';
+        });
+    }
+
+    if (waterBtn) {
+        waterBtn.addEventListener('click', () => {
+            if (farmState.water >= 100) {
+                alert('水分已滿，無需補水！');
+                return;
+            }
+            if (farmState.money >= 500) {
+                farmState.money -= 500;
+                farmState.water = 100;
+                alert('水分已補滿！');
+                updateFarmUI();
+            } else {
+                alert('資金不足 ($500)！');
+            }
+        });
+    }
+
+    // Global Functions for HTML onclick
+    window.closeShop = function () {
+        shopModal.style.display = 'none';
+    };
+
+    window.buyItem = function (type, unitCost) {
+        // Get quantity
+        const qtyInput = document.getElementById(`qty-${type}`);
+        let quantity = 1;
+        if (qtyInput) {
+            quantity = parseInt(qtyInput.value);
+            if (isNaN(quantity) || quantity < 1) quantity = 1;
+        }
+
+        const totalCost = unitCost * quantity;
+
+        if (farmState.money >= totalCost) {
+            farmState.money -= totalCost;
+            farmState.inventory[type] += quantity;
+            alert(`購買成功！ ${quantity} 個 ${type === 'fertilizer' ? '肥料' : '除蟲劑'} (花費 $${totalCost})`);
+            updateFarmUI();
+        } else {
+            alert(`資金不足！需要 $${totalCost}`);
+        }
+    };
+
+    window.useItem = function (type) {
+        if (farmState.inventory[type] > 0) {
+            if (type === 'fertilizer') {
+                if (farmState.dailyFertilizerUse >= 5) {
+                    alert('今日肥料使用次數已達上限 (5次)！');
+                    return;
+                }
+                farmState.progress = Math.min(100, farmState.progress + 5); // Nerf: +5
+                farmState.dailyFertilizerUse++; // Inc Counter
+                alert(`使用了肥料！作物生長加速 (+5)。今日已用: ${farmState.dailyFertilizerUse}/5`);
+            } else if (type === 'pesticide') {
+                farmState.isProtected = true;
+                alert('使用了除蟲劑！作物獲得保護，可抵禦蟲害。');
+            }
+            farmState.inventory[type]--;
+            updateFarmUI();
+        } else {
+            alert('物品不足！');
+        }
+    };
+
+
+    if (endTurnBtn) {
+        endTurnBtn.addEventListener('click', () => {
+            // 1. Resolve Active Disaster (End of Day Damage)
+            if (farmState.activeDisaster === 'pest') {
+                if (!farmState.isProtected) {
+                    farmState.progress = 0;
+                    alert('蟲災來襲！您未及時使用除蟲劑，作物已被啃食殆盡 (進度歸零)！');
+                } else {
+                    alert('除蟲劑發揮了作用，作物安然無恙！');
+                    farmState.isProtected = false; // Consume protection
+                }
+            } else if (farmState.activeDisaster === 'typhoon') {
+                // If it was typhoon day and we are ending turn, check damage
+                if (farmState.progress > 0) {
+                    farmState.progress = 0;
+                    alert('颱風過境！田地一片狼藉 (進度歸零)。');
+                }
+            }
+
+            updateFarmUI();
+            showSituation(); // Forecast Next
+        });
+    }
+
+    // 3. Situation / Omen Logic (Forecast)
+    function showSituation() {
+        // Random 1-3
+        const rand = Math.floor(Math.random() * 3) + 1;
+        const imgName = `situation${rand}.png`;
+
+        let desc = "未知的預兆...";
+        let type = 'market';
+
+        if (rand === 1) {
+            desc = "氣象預報顯示，近期可能有強烈颱風接近...";
+            type = 'typhoon';
+        } else if (rand === 2) {
+            desc = "在田間發現了蟲卵，似乎是蟲災的前兆...";
+            type = 'pest';
+        } else if (rand === 3) {
+            desc = "市場消息指出，近期農產品價格將大幅波動...";
+            type = 'market';
+        }
+
+        farmState.nextDisaster = type; // Store Forecast
+
+        situationImg.src = `images/${imgName}`;
+        situationDesc.textContent = desc;
+
+        situationModal.style.display = 'flex'; // Use flex to center
+    }
+
+    if (situationConfirmBtn) {
+        situationConfirmBtn.addEventListener('click', () => {
+            situationModal.style.display = 'none';
+            startNewDay();
+        });
+    }
+
+    // 4. New Day Logic
+    function startNewDay() {
+        if (farmState.day >= 10) {
+            endGame();
+            return;
+        }
+
+        farmState.day++;
+        farmState.stamina = 3;
+        // Water does not reset (must refill manually)
+
+        // Reset Logic
+        farmState.dailyFertilizerUse = 0;
+
+        // Disaster Transition
+        farmState.activeDisaster = farmState.nextDisaster;
+        farmState.nextDisaster = null;
+
+        updateFarmUI();
+
+        // UI Handling for Disasters
+        if (forceHarvestBtn) forceHarvestBtn.style.display = 'none'; // Default Hide
+
+        if (farmState.activeDisaster === 'typhoon') {
+            alert('注意！颱風警報生效中！您可以選擇「強制收成」以減少損失。');
+            if (forceHarvestBtn) forceHarvestBtn.style.display = 'inline-block';
+        } else if (farmState.activeDisaster === 'pest') {
+            alert('注意！蟲災爆發！請務必使用除蟲劑！');
+        }
+
+        alert(`第 ${farmState.day} 天開始了！`);
+    }
+
+    function endGame() {
+        const modal = document.getElementById('game-end-modal');
+        const scoreEl = document.getElementById('end-score');
+        const rankEl = document.getElementById('end-rank');
+        const commentEl = document.getElementById('end-comment');
+
+        const finalMoney = farmState.money;
+        scoreEl.textContent = `$${finalMoney}`;
+
+        let rank = 'C';
+        let comment = '再接再厲...';
+
+        if (finalMoney >= 5000) {
+            rank = 'S';
+            comment = '傳說級農夫！太神啦！🏆';
+        } else if (finalMoney >= 3000) {
+            rank = 'A';
+            comment = '專業農夫！收益驚人！🥇';
+        } else if (finalMoney >= 1500) {
+            rank = 'B';
+            comment = '合格農夫，表現不錯！🥈';
+        }
+
+        rankEl.textContent = rank;
+        commentEl.textContent = comment;
+
+        // Color coding
+        if (rank === 'S') rankEl.style.color = '#E91E63';
+        else if (rank === 'A') rankEl.style.color = '#FF9800';
+        else if (rank === 'B') rankEl.style.color = '#2196F3';
+        else rankEl.style.color = '#9E9E9E';
+
+        // Award Coupon
+        globalCouponCount++;
+        updateCouponUI();
+
+        // Show Message on UI instead of Alert
+        const giftMsgEl = document.getElementById('end-gift-msg');
+        if (giftMsgEl) giftMsgEl.textContent = '感謝你的遊玩贈與你100元抵用卷一張';
+
+        modal.style.display = 'flex';
+    }
+
+
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', () => {
+            resetGame();
+        });
+    }
+
+    const endCloseBtn = document.getElementById('end-close-btn');
+    if (endCloseBtn) {
+        endCloseBtn.addEventListener('click', () => {
+            document.getElementById('game-end-modal').style.display = 'none';
+        });
+    }
+
+    function resetGame() {
+        // Reset State
+        farmState.day = 1;
+        farmState.money = 1000;
+        farmState.stamina = 3;
+        farmState.progress = 0;
+        farmState.water = 100;
+        farmState.inventory.fertilizer = 0;
+        farmState.inventory.pesticide = 0;
+        farmState.isProtected = false;
+        farmState.dailyFertilizerUse = 0;
+        farmState.activeDisaster = null;
+        farmState.nextDisaster = null;
+
+        // Reset UI
+        document.getElementById('game-end-modal').style.display = 'none';
+
+        // Reset Scene
+        updateFarmUI();
+        alert('新的挑戰開始了！ (第 1 天)');
+    }
+
+    // Init
+    updateFarmUI();
+    updateCouponUI(); // Init Coupon UI
 
     // --- Admin Panel Logic ---
     const addProductForm = document.getElementById('add-product-form');
     const adminProductList = document.getElementById('admin-product-list');
     const adminNavBtn = document.querySelector('[data-target="admin"]');
 
-    // Render Admin List when navigating to Admin
-    adminNavBtn.addEventListener('click', () => {
-        renderAdminProductList();
-    });
+    if (adminNavBtn) {
+        adminNavBtn.addEventListener('click', () => {
+            renderAdminProductList();
+        });
+    }
 
     function renderAdminProductList() {
+        // We need to re-query cards every time as they might change
         const cards = document.querySelectorAll('.product-card');
+        if (!adminProductList) return;
+
         adminProductList.innerHTML = '';
 
         if (cards.length === 0) {
@@ -428,8 +917,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         cards.forEach((card, index) => {
-            const name = card.querySelector('h3').innerText;
-            const imgSrc = card.querySelector('img').src;
+            const name = card.querySelector('h3') ? card.querySelector('h3').innerText : 'Unknown';
+            const img = card.querySelector('img');
+            const imgSrc = img ? img.src : '';
+
             const item = document.createElement('div');
             item.classList.add('admin-list-item');
 
@@ -443,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
             adminProductList.appendChild(item);
         });
 
-        // Attach event listeners to new remove buttons
+        // Attach event listeners
         document.querySelectorAll('.admin-remove-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.target.dataset.index);
@@ -457,49 +948,54 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cards[index]) {
             if (confirm('確定要下架此商品嗎？')) {
                 cards[index].remove();
-                renderAdminProductList(); // Re-render logic
+                renderAdminProductList(); // Refresh list
                 alert('商品已下架');
             }
         }
     }
 
-    // Add Product
-    addProductForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    // Add Product Form Logic
+    if (addProductForm) {
+        addProductForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-        const name = document.getElementById('new-prod-name').value;
-        const imgInput = document.getElementById('new-prod-img');
-        const price = document.getElementById('new-prod-price').value;
-        const cat = document.getElementById('new-prod-cat').value;
+            const name = document.getElementById('new-prod-name').value;
+            const imgInput = document.getElementById('new-prod-img');
+            const price = document.getElementById('new-prod-price').value;
+            const cat = document.getElementById('new-prod-cat').value;
 
-        // Basic validation
-        if (!name || imgInput.files.length === 0 || !price) {
-            alert('請填寫完整資訊並上傳圖片');
-            return;
-        }
+            // Basic validation
+            if (!name || imgInput.files.length === 0 || !price) {
+                alert('請填寫完整資訊並上傳圖片');
+                return;
+            }
 
-        const file = imgInput.files[0];
-        const reader = new FileReader();
+            const file = imgInput.files[0];
+            const reader = new FileReader();
 
-        reader.onload = function (e) {
-            const imgUrl = e.target.result; // Base64 string
-            addProductToDOM(name, imgUrl, price, cat);
+            reader.onload = function (e) {
+                const imgUrl = e.target.result; // Base64 string
+                addProductToDOM(name, imgUrl, price, cat);
 
-            // Reset form
-            addProductForm.reset();
-            alert('上架成功！');
+                // Reset form
+                addProductForm.reset();
+                alert('上架成功！');
 
-            // If we serve the list immediately
-            renderAdminProductList();
-        }
+                // If we serve the list immediately
+                renderAdminProductList();
+            };
 
-        reader.readAsDataURL(file);
-    });
+            reader.readAsDataURL(file);
+        });
+    }
 
     function addProductToDOM(name, imgUrl, price, category) {
+        const productGrid = document.querySelector('.product-grid');
+        if (!productGrid) return;
+
         const newCard = document.createElement('div');
         newCard.classList.add('product-card');
-        newCard.setAttribute('data-category', category); // Helper for filter
+        newCard.setAttribute('data-category', category);
 
         const html = `
             <div class="card-img">
@@ -517,4 +1013,4 @@ document.addEventListener('DOMContentLoaded', () => {
         productGrid.appendChild(newCard);
     }
 
-});
+}); // End DOMContentLoaded
