@@ -1108,3 +1108,254 @@ body {
     border-radius: 6px;
     text-align: center;
 }
+
+/* --- Component Styles Handled from HTML Inline --- */
+.info-container {
+    display: flex;
+    gap: 20px;
+    margin: 40px auto;
+    max-width: 1200px;
+    padding: 0 20px;
+}
+
+.announcement-box {
+    flex: 4;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.market-price-box {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (RWD) OPTIMIZATIONS
+   ========================================= */
+
+/* --- Tablet / Small Laptop (max-width: 1024px) --- */
+@media screen and (max-width: 1024px) {
+    .product-grid {
+        gap: 1.5rem;
+    }
+
+    .farm-stats {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .stat-box {
+        flex: 1 1 40%;
+        /* 2 items per row */
+        margin-bottom: 5px;
+    }
+
+    .info-container {
+        flex-direction: column;
+    }
+
+    .announcement-box,
+    .market-price-box {
+        flex: 1 1 auto !important;
+        /* Override inline styles */
+        width: 100%;
+    }
+}
+
+/* --- Mobile Landscape / Tablet Portrait (max-width: 768px) --- */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 15px;
+        /* Slightly smaller base font */
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    /* Navigation */
+    .navbar {
+        padding: 0.8rem 1rem;
+    }
+
+    .nav-links {
+        display: none;
+        /* Ensure hidden on mobile as we use drawer */
+    }
+
+    /* Marquee */
+    .marquee-wrapper {
+        padding: 0 35px;
+        /* Less padding for buttons */
+    }
+
+    .marquee-item {
+        width: 140px;
+        /* Smaller items */
+    }
+
+    .marquee-item img {
+        height: 100px;
+    }
+
+    /* Farm Game */
+    .farm-controls {
+        flex-wrap: wrap;
+    }
+
+    .game-btn {
+        flex: 1 1 calc(50% - 10px);
+        /* 2 buttons per row */
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Shop Grid in Game */
+    .shop-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .shop-grid {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .shop-item {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .shop-item .icon {
+        margin-bottom: 0;
+        font-size: 2rem;
+    }
+
+    .buy-controls {
+        width: auto;
+        margin-left: auto;
+        /* Push to right */
+        margin-top: 0;
+    }
+
+    /* Modals */
+    .modal-content,
+    .cart-modal-content {
+        width: 95%;
+        margin: 10% auto;
+        /* More visually centered on vertical */
+    }
+
+    .purchase-layout {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .purchase-img-container,
+    .purchase-details {
+        width: 100%;
+    }
+
+    .cart-header h2 {
+        font-size: 1.2rem;
+    }
+
+    /* News Grid */
+    .news-grid {
+        grid-template-columns: 1fr !important;
+        /* Single column */
+    }
+}
+
+/* --- Mobile Portrait (max-width: 480px) --- */
+@media screen and (max-width: 480px) {
+    .navbar {
+        padding: 0.5rem;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    /* Hero */
+    .hero {
+        padding: 3rem 1rem;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    /* Product Grid */
+    .product-grid {
+        grid-template-columns: 1fr;
+        /* Full width cards */
+        gap: 1.5rem;
+    }
+
+    /* Farm Game */
+    .farm-stats {
+        gap: 5px;
+    }
+
+    .stat-box {
+        flex: 1 1 100%;
+        /* Stack stats */
+        font-size: 1rem;
+    }
+
+    .game-btn {
+        flex: 1 1 100%;
+        /* Full width buttons */
+    }
+
+    /* Cart */
+    .cart-total {
+        font-size: 1rem;
+    }
+
+    .checkout-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Admin */
+    .admin-panel {
+        flex-direction: column;
+    }
+
+    .admin-card {
+        padding: 1rem;
+    }
+
+    .admin-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .admin-remove-btn {
+        width: 100%;
+        margin-top: 5px;
+    }
+}
+
+/* Helper Class for Mobile Hidden */
+@media screen and (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+}
